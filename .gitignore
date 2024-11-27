@@ -1,2 +1,5 @@
 # Ignorer les clés
 *.key
+
+#ignore test json
+info.json

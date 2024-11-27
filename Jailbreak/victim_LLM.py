@@ -2,8 +2,12 @@ from openai import OpenAI
 import json
 
 def write_answer(answer):
-    with open('info.json', 'w') as f:
-        json.dump({"victim answer": answer}, f)
+    with open('Jailbreak/info.json', 'r') as f:
+        data = json.load(f)
+        data["victim answer"].append(answer)
+        f.close()
+    with open('Jailbreak/info.json', 'w') as f:
+        json.dump(data, f,indent=4)
 
 # Getting the key and Creating the LLM Victim
 
@@ -24,8 +28,8 @@ def create_victime_answer(attacker_prompt, Openai_key = openai_key):
         messages=[{"role": "system", "content": get_system_prompt()},
                   {"role": "user", "content": attacker_prompt}])
     
-    print(response.choices[0].message.content)
-
+    new_answer = response.choices[0].message.content
+    print(new_answer)
     write_answer(response.choices[0].message.content)
 
     return(response.choices[0].message.content)
