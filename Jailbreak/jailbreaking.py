@@ -3,6 +3,9 @@ from victim_LLM import create_victime_answer
 import json
 
 def init_json(file_name):
+    """
+    Creates Json file or reinitializes it
+    """
     with open(file_name,'w') as json_file:
         data = {}
         data["iteration"] = [0]
@@ -12,6 +15,9 @@ def init_json(file_name):
         json.dump(data,json_file,indent=4)
 
 def write_iteration(iteration):
+    """
+    Update json file
+    """
     with open('Jailbreak/info.json', 'r') as f:
         data = json.load(f)
         data["iteration"][0] = iteration
@@ -30,10 +36,10 @@ def get_attacker_prompt(file_name,iteration):
 def main():
     iteration = 0
     while True:
-        print("\n1. Attacker create a prompt.")
+        print("\n1. Attacker creates a prompt.")
         attacker_json = create_prompt()
         
-        print("\n2. Victim answer to the prompt.")
+        print("\n2. Victim answers to the prompt.")
         attacker_prompt = get_attacker_prompt("Jailbreak/info.json",iteration)
         victim_answer = create_victime_answer(attacker_prompt)
 
