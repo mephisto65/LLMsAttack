@@ -1,5 +1,7 @@
 from attacker_LLM import create_prompt
 from victim_LLM import create_victime_answer
+from judge import judge_response
+
 import json
 
 def init_json(file_name):
@@ -12,6 +14,9 @@ def init_json(file_name):
         data["improvement"] = []
         data["prompt"] = []
         data["victim answer"] = []
+        data["score"] = []
+        data["judge_improvement"] = []
+
         json.dump(data,json_file,indent=4)
 
 def write_iteration(iteration):
@@ -42,6 +47,7 @@ def main():
         print("\n2. Victim answers to the prompt.")
         attacker_prompt = get_attacker_prompt("Jailbreak/info.json",iteration)
         victim_answer = create_victime_answer(attacker_prompt)
+        judge_answer = judge_response(victim_answer,)
 
         # Demander à l'utilisateur s'il veut continuer ou arrêter
         next_step = input("\nClick 'Enter' to continue or 'q' to leave : ")

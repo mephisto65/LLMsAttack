@@ -20,6 +20,10 @@ To run the project, ensure that you have Python 3.x installed along with the fol
 
 ## Usage
 
+git clone https://github.com/mephisto65/LLMsAttack
+
+Put your key in a file names OpenAI_Key.key in the LLMsAttack folder
+
 The program relies on a JSON file (info.json) to store iteration data, prompts, and victim responses. This file is automatically created and initialized when you first run the program.
 
 To initialize the info.json file, run the following command:
