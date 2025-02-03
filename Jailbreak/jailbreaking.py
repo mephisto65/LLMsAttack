@@ -1,62 +1,38 @@
-from attacker_LLM import create_prompt
-from victim_LLM import create_victime_answer
-from judge import judge_response
-
-import json
-
-def init_json(file_name):
-    """
-    Creates Json file or reinitializes it
-    """
-    with open(file_name,'w') as json_file:
-        data = {}
-        data["iteration"] = [0]
-        data["improvement"] = []
-        data["prompt"] = []
-        data["victim answer"] = []
-        data["score"] = []
-        data["judge_improvement"] = []
-
-        json.dump(data,json_file,indent=4)
-
-def write_iteration(iteration):
-    """
-    Update json file
-    """
-    with open('Jailbreak/info.json', 'r') as f:
-        data = json.load(f)
-        data["iteration"][0] = iteration
-        f.close()
-    with open('Jailbreak/info.json', 'w') as f:
-        json.dump(data,f,indent=4)
-
-def get_attacker_prompt(file_name,iteration):
-    with open(file_name, 'r') as json_file:
-        data = json.load(json_file)
-        attacker_prompt = data.get("prompt")[iteration]
-        print(f"attacker prompt : {attacker_prompt}\n")
-
-        return attacker_prompt
+from attacker_LLM import create_attacker_prompt,get_system_prompt_attacker
+from victim_LLM import create_victime_answer,get_system_prompt_victim
+from judge import create_judge_feedback,get_system_prompt_judge
 
 def main():
-    iteration = 0
-    while True:
-        print("\n1. Attacker creates a prompt.")
-        attacker_json = create_prompt()
-        
-        print("\n2. Victim answers to the prompt.")
-        attacker_prompt = get_attacker_prompt("Jailbreak/info.json",iteration)
-        victim_answer = create_victime_answer(attacker_prompt)
-        judge_answer = judge_response(victim_answer,)
 
-        # Demander à l'utilisateur s'il veut continuer ou arrêter
+#################### INIT ########################################
+
+    iteration = 0                           # Init iteration
+    victim_answer = ""                      # Init answer
+    judge_feedback= ""    
+    history_attacker,history_victim=[{"role": "system", "content": get_system_prompt_attacker(iteration)}],[{"role": "assistant", "content": get_system_prompt_victim()}]   # Initialize histories
+    history_judge = [{"role": "system", "content": get_system_prompt_judge()}]
+
+###################################################################
+ 
+    while True:
+        print("\n1. ------------------- Attacker creates a prompt.-------------------------------\n")
+        attacker_prompt,history_attacker = create_attacker_prompt(history_attacker,iteration,victim_answer,judge_feedback=judge_feedback)
+        print(f"{attacker_prompt}\n")
+        
+        print("\n2. ---------------- Victim answers to the prompt.-------------------------------\n")
+        victim_answer,history_victim = create_victime_answer(history_victim,attacker_prompt)
+        print(f"{victim_answer}\n")
+
+        print("\n3. ------------------ Judge creates a feedback.--------------------------------\n")
+        judge_feedback,history_judge = create_judge_feedback(history_judge,victim_answer,attacker_prompt)
+        print(f"{judge_feedback}\n")
+
+        # Ask the user whether to continue or stop
         next_step = input("\nClick 'Enter' to continue or 'q' to leave : ")
         iteration+=1
-        write_iteration(iteration)
         if next_step.lower() == 'q':
             print("End of program.")
             break
 
 if __name__ == "__main__":
-    init_json("Jailbreak/info.json")
     main()
