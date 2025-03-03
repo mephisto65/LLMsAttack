@@ -9,6 +9,7 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5):
 #################### INIT ########################################
 
     iteration = 0                           # Init iteration
+    tot_iteration = 0
     victim_answer = ""                      # Init answer
     judge_feedback= ""    
     history_attacker,history_victim=[{"role": "system", "content": get_system_prompt_attacker(iteration)}],[{"role": "assistant", "content": get_system_prompt_victim()}]   # Initialize histories
@@ -42,7 +43,7 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5):
             judge_feedback,history_judge = create_judge_feedback(judge_model,history_judge,victim_answer,attacker_prompt)
             print(f"{judge_feedback}\n")
 
-            iteration+=1
+            tot_iteration+=1
 
         # Ask the user whether to continue or stop
         next_step = input("\nClick 'Enter' to continue or 'q' to leave : ")
@@ -50,6 +51,8 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5):
         if next_step.lower() == 'q':
             print("End of program.")
             break
+
+        iteration = 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automate LLM jailbreak testing.")
