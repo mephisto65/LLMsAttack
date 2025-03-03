@@ -21,7 +21,7 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5):
 
         while iteration < n_iterations :
 
-            print(f"\niteration : {iteration}\n")
+            print(f"\niteration : {tot_iteration}\n")
 
             print("\n1. ------------------- Attacker creates a prompt.-------------------------------\n")
             attacker_prompt,history_attacker = create_attacker_prompt(attacker_model,history_attacker,iteration,victim_answer,judge_feedback=judge_feedback)
@@ -44,6 +44,7 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5):
             print(f"{judge_feedback}\n")
 
             tot_iteration+=1
+            iteration+=1
 
         # Ask the user whether to continue or stop
         next_step = input("\nClick 'Enter' to continue or 'q' to leave : ")
