@@ -1,5 +1,5 @@
 from openai import OpenAI
-import os
+from anthropic import Anthropic
 from mistralai import Mistral
 
 ################## Replace private key HERE ###############################
@@ -21,6 +21,12 @@ def retrieveKey(model):
     elif model=="deepseek":
 
         with open('deepseek_Key.key','r') as f:
+            private_key= f.read()
+            f.close()
+
+    elif model=="Claude":
+
+        with open('Claude_Key.key','r') as f:
             private_key= f.read()
             f.close()
 
@@ -79,8 +85,22 @@ def create_victime_answer(model,conversation_history,attacker_prompt):
         response = client.chat.complete(
         model=model,
         messages=conversation_history)
-        
-    answer = response.choices[0].message.content
+
+    elif model == "Claude" :
+
+        client = Anthropic(api_key=private_key)
+        model="claude-3-7-sonnet-20250219"
+        response=client.messages.create(
+            system=get_system_prompt_victim(),
+            model=model,
+            max_tokens=20000,
+            messages=conversation_history
+        )
+    
+    if model != "claude-3-7-sonnet-20250219":
+        answer = response.choices[0].message.content
+    else:
+        answer = response.content[0].text
 
     add_to_history_victim(conversation_history,prompt=answer)
 

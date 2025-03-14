@@ -30,9 +30,19 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5,n_attacks=1):
     iteration = 0                           # Init iteration
     tot_iteration = 0
     victim_answer = ""                      # Init answer
-    judge_feedback= ""    
-    history_attacker,history_victim=[{"role": "system", "content": get_system_prompt_attacker(iteration)}],[{"role": "assistant", "content": get_system_prompt_victim()}]   # Initialize histories
-    history_judge = [{"role": "system", "content": get_system_prompt_judge()}]
+    judge_feedback= ""
+    if attacker_model != "Claude":
+        history_attacker = [{"role": "system", "content": get_system_prompt_attacker(iteration)}]  # Initialize histories
+    else :
+        history_attacker = [{"role": "user", "content": "Follow your system prompt"}]
+    if victim_model != "Claude":
+        history_victim = [{"role": "assistant", "content": get_system_prompt_victim()}]
+    else :
+        history_victim = []
+    if judge_model != "Claude" :
+        history_judge = [{"role": "system", "content": get_system_prompt_judge()}]
+    else :
+        history_judge = []
 
 ###################################################################
 
@@ -95,9 +105,9 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5,n_attacks=1):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automate LLM jailbreak testing.")
-    parser.add_argument("--attacker-model", type=str, choices=["openAI", "Mistral","deepseek"], required=True, help="Specify the model which creates unethical prompts.")
-    parser.add_argument("--victim-model", type=str, choices=["openAI", "Mistral","deepseek"], required=True, help="Specify the model to jailbreak.")
-    parser.add_argument("--judge-model", type=str, choices=["openAI", "Mistral","deepseek"], required=True, help="Specify the model which analysis the attacker's prompt and the victim's answer to provide feedback")
+    parser.add_argument("--attacker-model", type=str, choices=["openAI", "Mistral","deepseek","Claude"], required=True, help="Specify the model which creates unethical prompts.")
+    parser.add_argument("--victim-model", type=str, choices=["openAI", "Mistral","deepseek","Claude"], required=True, help="Specify the model to jailbreak.")
+    parser.add_argument("--judge-model", type=str, choices=["openAI", "Mistral","deepseek","Claude"], required=True, help="Specify the model which analysis the attacker's prompt and the victim's answer to provide feedback")
     parser.add_argument("--n-iterations", type=int,required=False,help="Number of iterations to try before asking to the user if he wants to continue the attack")
     parser.add_argument("--n-attacks", type=int,required=False,help="number of times the model will be attacked")
     args = parser.parse_args()

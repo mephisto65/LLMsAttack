@@ -1,6 +1,7 @@
 from openai import OpenAI
 from mistralai import Mistral
 import json
+from anthropic import Anthropic
 
 # Getting the key
 
@@ -21,6 +22,12 @@ def retrieveKey(model):
     elif model=="deepseek":
 
         with open('deepseek_Key.key','r') as f:
+            private_key= f.read()
+            f.close()
+
+    elif model=="Claude":
+
+        with open('Claude_Key.key','r') as f:
             private_key= f.read()
             f.close()
 
@@ -54,7 +61,8 @@ def add_to_history_judge(conversation_history,attacker_prompt="", victim_answer=
 def create_judge_feedback(model,history_conversation,response_victim, attacker_prompt):
 
     #################### Update internal prompt #################################
-    history_conversation[0] = {"role": "system", "content": get_system_prompt_judge(victim_answer=response_victim,attacker_prompt=attacker_prompt)}
+    if model != "Claude":
+        history_conversation[0] = {"role": "system", "content": get_system_prompt_judge(victim_answer=response_victim,attacker_prompt=attacker_prompt)}
     add_to_history_judge(history_conversation,attacker_prompt=attacker_prompt,victim_answer=response_victim)
     ##############################################################################
 
@@ -84,7 +92,21 @@ def create_judge_feedback(model,history_conversation,response_victim, attacker_p
         model=model,
         messages=history_conversation)
 
-    feedback = response.choices[0].message.content
+    elif model == "Claude" :
+
+        client = Anthropic(api_key=private_key)
+        model="claude-3-7-sonnet-20250219",
+        response=client.messages.create(
+            model=model,
+            system=get_system_prompt_judge(victim_answer=response_victim,attacker_prompt=attacker_prompt),
+            max_tokens=20000,
+            messages=history_conversation
+        )
+
+    if model != "claude-3-7-sonnet-20250219":
+        feedback = response.choices[0].message.content
+    else :
+        feedback = response.content[0].text
 
     add_to_history_judge(history_conversation,judge_feedback=feedback)
 

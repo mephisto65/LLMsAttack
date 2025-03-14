@@ -1,5 +1,5 @@
 from openai import OpenAI
-import os
+from anthropic import Anthropic
 from mistralai import Mistral
 
 ################## Replace private key HERE ###############################
@@ -21,6 +21,12 @@ def retrieveKey(model):
     elif model=="deepseek":
 
         with open('deepseek_Key.key','r') as f:
+            private_key= f.read()
+            f.close()
+
+    elif model=="Claude":
+
+        with open('Claude_Key.key','r') as f:
             private_key= f.read()
             f.close()
 
@@ -121,6 +127,8 @@ def add_to_history_attacker(conversation_history,prompt="", response=""):
         conversation_history.append({"role": "assistant", "content": str(prompt)})
     elif prompt == "" :
         conversation_history.append({"role": "user", "content": str(response)})
+    if len(conversation_history)>8: # Control Context Window
+        conversation_history.pop(1)
 
 def create_attacker_prompt(model,conversation_history,iteration,victim_answer="", judge_feedback=""):
     """
@@ -130,7 +138,8 @@ def create_attacker_prompt(model,conversation_history,iteration,victim_answer=""
     private_key = retrieveKey(model) # GET PRIVATE KEY
 
     ################ UPDATE HISTORY ########################
-    conversation_history[0] = {"role": "system", "content": get_system_prompt_attacker(iteration,victim_answer=victim_answer,improvement=judge_feedback)} # Update the internal prompt of the attacker with the last answer and improvement
+    if model != "Claude" :
+        conversation_history[0] = {"role": "system", "content": get_system_prompt_attacker(iteration,victim_answer=victim_answer,improvement=judge_feedback)} # Update the internal prompt of the attacker with the last answer and improvement
     add_to_history_attacker(conversation_history,response=victim_answer)
     ########################################################
 
@@ -139,16 +148,16 @@ def create_attacker_prompt(model,conversation_history,iteration,victim_answer=""
         client = OpenAI(api_key=private_key)
         model="gpt-3.5-turbo"
         response = client.chat.completions.create(
-        model=model,
-        messages=conversation_history)
+            model=model,
+            messages=conversation_history)
 
     elif model == "deepseek" : 
 
         client = OpenAI(api_key=private_key,base_url="https://api.deepseek.com")
         model="deepseek-chat"
         response = client.chat.completions.create(
-        model=model,
-        messages=conversation_history)
+            model=model,
+            messages=conversation_history)
 
     elif model == "Mistral" :
 
@@ -157,8 +166,23 @@ def create_attacker_prompt(model,conversation_history,iteration,victim_answer=""
         response = client.chat.complete(
         model=model,
         messages=conversation_history)
-        
-    attacker_prompt = response.choices[0].message.content
+
+    elif model == "Claude" :
+
+        client = Anthropic(api_key=private_key)
+        model="claude-3-7-sonnet-20250219"
+        response=client.messages.create(
+            system=get_system_prompt_attacker(iteration,victim_answer=victim_answer,improvement=judge_feedback),
+            model=model,
+            max_tokens=20000,
+            messages=conversation_history
+        )
+
+    if model != "claude-3-7-sonnet-20250219":
+        attacker_prompt = response.choices[0].message.content
+    else :
+        attacker_prompt = response.content[0].text
+
     add_to_history_attacker(conversation_history,prompt=attacker_prompt)
 
     return(attacker_prompt,conversation_history)
