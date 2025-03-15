@@ -1,4 +1,4 @@
-from attacker_LLM import create_attacker_prompt,get_system_prompt_attacker
+from attacker_LLM import create_attacker_prompt,get_system_prompt_attacker_impersonation, get_system_prompt_attacker_logical_appealing
 from victim_LLM import create_victime_answer,get_system_prompt_victim
 from judge import create_judge_feedback,get_system_prompt_judge
 from time import sleep
@@ -11,7 +11,7 @@ def init():
     tot_iteration = 0
     victim_answer = ""                      # Init answer
     judge_feedback= ""    
-    history_attacker,history_victim=[{"role": "system", "content": get_system_prompt_attacker(iteration)}],[{"role": "assistant", "content": get_system_prompt_victim()}]   # Initialize histories
+    history_attacker,history_victim=[{"role": "system", "content": get_system_prompt_attacker_logical_appealing(iteration)}],[{"role": "assistant", "content": get_system_prompt_victim()}]   # Initialize histories
     history_judge = [{"role": "system", "content": get_system_prompt_judge()}]
 
     return iteration,tot_iteration,victim_answer,judge_feedback,history_attacker,history_victim,history_judge
@@ -32,7 +32,7 @@ def main(attacker_model, victim_model, judge_model,n_iterations=5,n_attacks=1):
     victim_answer = ""                      # Init answer
     judge_feedback= ""
     if attacker_model != "Claude":
-        history_attacker = [{"role": "system", "content": get_system_prompt_attacker(iteration)}]  # Initialize histories
+        history_attacker = [{"role": "system", "content": get_system_prompt_attacker_logical_appealing(iteration)}]  # Initialize histories
     else :
         history_attacker = [{"role": "user", "content": "Follow your system prompt"}]
     if victim_model != "Claude":
